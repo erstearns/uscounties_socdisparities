@@ -38,14 +38,6 @@ geodata <- st_transform(geodata, crs = 4326)
 #load aspatial data
 adata <- readRDS('data/acs5_2007_2017_fin.Rds')
 
-#model data
-moddata <- readRDS('data/eb_rtg.Rds')
-
-#spatial model data
-geomod <- readRDS('data/eb_spatial_v.Rds')
-#transform spatial data to wgs84
-geomod <- st_transform(geomod, crs = 4326)
-
 # -------------------------------------- app inputs defined ----------------------------------------
 #state choices
 state_names <- as.character(unique(adata$state_name))
@@ -142,91 +134,7 @@ ui <- bootstrapPage(
                       width = 3, status = 'warning')
                 ) #end fluidrow2
                 
-        ), # -------------------------------------------------------- end Data explorer
-        
-        # Model output explorer ------------------------------------------------------
-        tabItem(tabName = "moddata",
-                fluidRow(
-                  box(
-                    # -- user input options -- 
-                    title = "Controls",
-                    #select geography
-                    # -> source - parent of:
-                    selectInput('mod_state', label = "State", choices = c("All",mod_state_names), 
-                                selected = "All"),
-                    #select year
-                    # -> source - parent of:
-                    sliderInput('mod_year', label = "Year", value = 2012, min = 2012, max = 2016, 
-                                step=4, sep = "",
-                                animate = animationOptions(interval = 750)),
-                    #select xvar
-                    # -> endpoint - child of: renderUI -- not currently
-                    # -> source - parent of:
-                    uiOutput('mod_xvar'),
-                    #selectInput('xvar',label = 'x Var', choices = var_choices, selected = "blackwhite_ratio"),
-                    #select yvar
-                    # -> endpoint - child of: renderUI -- not currently
-                    # -> source - parent of:
-                    uiOutput('mod_yvar'),
-                    #selectInput('yvar',label = 'y Var', choices = var_choices, selected = "edu_collegeplus"),
-                    #select color var (for map)
-                    # -> endpoint - child of: renderUI -- not currently
-                    # -> source - parent of:
-                    uiOutput('mod_cvar'),
-                    #selectInput('cvar',label = 'Color Var', choices = var_choices, selected = "blackwhite_ratio"),
-                    
-                    #grab ui output
-                    uiOutput("mod_ui"),
-                    width = 3
-                    
-                  ),
-                  # map
-                  # >- endpoint - child of:
-                  box(width = 9,status = 'warning',
-                      leafletOutput("modmap",height = 650)
-                  )
-                ), #end model fluidrow 1
-                
-                fluidRow(
-                  # -- bivariate scatter plot -- 
-                  box(plotOutput("mod_biscatter", 
-                                 brush = brushOpts(id="mod_bibrush")), 
-                      width = 6, status = 'warning'),
-                  #setting row height
-                  #style = 'height:40vh'
-                  box(plotOutput("mod_xscatter"),
-                      width = 3, status = 'warning'),
-                  box(plotOutput("mod_yscatter"), 
-                      width = 3, status = 'warning')
-                ) #end model fluidrow 2
-                
-        ), # ------------------------------------------------- end Model output explorer
-        
-        # social epi of preterm birth ------------------------------------------------------
-        tabItem(tabName = "socepi",
-                fluidRow(
-                  box(includeHTML("socepi_pretermbirth.html"), 
-                      status = "success",
-                      width = 9
-                  ),
-                  box(width = 3)
-                ),
-                fluidRow(
-                  box(includeHTML("socepi_aim1.html"),
-                      status = "primary", solidHeader = TRUE,
-                      width = 4),
-                  box(includeHTML("socepi_aim2.html"),
-                      status = "warning", solidHeader = TRUE, 
-                      width = 4),
-                  box(includeHTML("socepi_aim3.html"),
-                      status = "danger", solidHeader = TRUE, 
-                      width = 4)
-                  
-                ),
-                fluidRow(
-                  box(includeHTML("socepi_ref.html"))
-                )
-        )
+        ) # -------------------------------------------------------- end Data explorer
         
       ) #close tabitems
     ) #close dashboard body
