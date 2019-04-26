@@ -24,3 +24,4 @@ profvis({ runApp('app/app.R')},
 #save profvis output to html
 save_profvis2html(input = paste0('profiling/profvis_outdir/', today, "_app.Rprof"),
                   outdir = 'profiling/profvis_html/')
+
