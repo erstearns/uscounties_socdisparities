@@ -25,3 +25,7 @@ profvis({ runApp('app/app.R')},
 save_profvis2html(input = paste0('profiling/profvis_outdir/', today, "_app.Rprof"),
                   outdir = 'profiling/profvis_html/')
 
+
+
+runApp('../mod-geodisparities/CODE/shiny/mod_geo_mockup/app.R')
+

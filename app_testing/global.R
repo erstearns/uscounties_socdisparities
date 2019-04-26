@@ -15,12 +15,21 @@ library(RColorBrewer)
 library(rgdal)
 library(sf)
 library(ggplot2)
-library(ggvis)
 library(shinydashboard)
 library(dplyr)
 library(fontawesome)
 require(raster)
 require(gstat)
+library(htmltools)
+
+pacman::p_load(data.table,feather,dplyr,
+               sf, rgdal, raster, gstat, 
+               shiny, shinydashboard, shinyjs,
+               ggvis, ggplot2, Cairo,
+               leaflet, leaflet.extras,
+               htmltools, RColorBrewer, fontawesome,
+               profvis)
+
 
 # -------------------------------------- load data ------------------------------------------------- 
 #load spatial data
