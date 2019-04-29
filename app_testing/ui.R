@@ -10,7 +10,7 @@
 ui <- bootstrapPage(
   dashboardPage(
     skin = "green",
-    dashboardHeader(title = "US County GeoDisparities"),
+    dashboardHeader(title = "US County /n GeoDisparities"),
     dashboardSidebar(
       sidebarMenu(
         menuItem("About", tabName = "about", icon = icon("leanpub")),

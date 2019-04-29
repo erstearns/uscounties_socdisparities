@@ -1,8 +1,15 @@
 ##############################################
 # Code author: erin r stearns
-# Code objective: us county geodisparities shiny mock up
-# Date: 4.25.2019
+# Code objective: create MoD shiny mock up
+# Date: 1.8.2019
 #############################################
+
+#####################################################
+# --------------- TO DO ITEMS -----------------------
+# - Make auto-subsetting in response to map panning
+# - Make map plot 2 vals in -- base poly color and then centroid graduated symbols
+# - add Github link if open source
+# ---------------------------------------------------
 
 
 ######################################################################################################
@@ -15,6 +22,7 @@ library(RColorBrewer)
 library(rgdal)
 library(sf)
 library(ggplot2)
+library(ggvis)
 library(shinydashboard)
 library(dplyr)
 library(fontawesome)
@@ -40,7 +48,7 @@ state_names <- as.character(unique(adata$state_name))
 ui <- bootstrapPage(
   dashboardPage(
     skin = "green",
-    dashboardHeader(title = "County GeoDisparities"),
+    dashboardHeader(title = "MoD:GeoDisparities"),
     dashboardSidebar(
       sidebarMenu(
         menuItem("About", tabName = "about", icon = icon("leanpub")),
@@ -50,13 +58,16 @@ ui <- bootstrapPage(
     
     dashboardBody(
       tabItems(
-        #About MoD Geodisparities ----------------------------------------------------
+        #About app -----------------------------------------------------------------
         tabItem(tabName = "about",
                 fluidRow(
-                  box(includeHTML("about.html"), width = 9)
-              )
-              
-            ), # ------------------------------------------------------- end About tab
+                  box(title = "Socio-demographic Disparities across US Counties",
+                      p("This tool specifically aims to educate users about sociodemographic inequities across the US through interactice visualization."),
+                      br(),
+                      p("Data sources include: US Census Bureaus, PolicyMap and Brown University's Diversity and Disparities Project.")
+                    , width = 9)
+                  )
+                ), # ------------------------------------------------------- end About tab
         # Data explorer --------------------------------------------------------------
         tabItem(tabName = "indata",
                 fluidRow(
@@ -114,10 +125,10 @@ ui <- bootstrapPage(
                 
         ) # -------------------------------------------------------- end Data explorer
         
-      ) #close tabitems
-    ) #close dashboard body
-  ) #close dashboard page
-) #close bootstrap page
+                      ) #close tabitems
+                  ) #close dashboard body
+                  ) #close dashboard page
+                  ) #close bootstrap page
 
 
 ############################################
@@ -148,7 +159,7 @@ server <- function(input, output, session) {
       addProviderTiles("Esri.WorldImagery", group = "Esri.WorldImagery") %>%
       addLayersControl(baseGroups = c("OpenStreetmap","Esri.OceanBasemap", 'Esri.WorldImagery'),
                        options = layersControlOptions(collapsed = TRUE, autoZIndex = F)) %>%
-      fitBounds(-124.848974, 24.396308, -66.885444, 49.384358) %>% #manually input us centroid to center view
+      fitBounds(-124.848974, 24.396308, -66.885444, 49.384358) %>% #manually input us centroid
       addScaleBar(position = "bottomleft") %>%
       addEasyButton(easyButton(
         icon="fa-globe", title="Zoom to Level 1",
@@ -273,7 +284,7 @@ server <- function(input, output, session) {
   
   # create charts & circle size options ------------------------------------------------------------
   #bivariate scatter plot 
-  output$biscatter <- renderPlot({
+  output$biscatter <- renderCachedPlot({
     print('plotting bivariate scatter plot')
     
     ggplot(asp_selected_data(),aes_string(input$xvar, input$yvar, colour = input$color)) +
@@ -282,10 +293,10 @@ server <- function(input, output, session) {
       scale_colour_distiller(palette = "YlOrRd", direction = 1) +
       theme(legend.position = "none")
     
-  })
+  }, cacheKeyExpr = {c(input$xvar, input$yvar, input$color)})
   
   # xvar scatter plot
-  output$xscatter <- renderPlot({
+  output$xscatter <- renderCachedPlot({
     print('plotting xvar scatter plot')
     
     #linking to brushed points from bivariate scatter
@@ -296,10 +307,10 @@ server <- function(input, output, session) {
       geom_density(data=brushed, fill = "red") +
       theme(legend.position = "none")
     
-  })
+  }, cacheKeyExpr = {input$xvar})
   
   # yvar scatter plot
-  output$yscatter <- renderPlot({
+  output$yscatter <- renderCachedPlot({
     print('plotting yvar scatter plot')
     
     #linking to brushed points from bivariate scatter
@@ -310,7 +321,7 @@ server <- function(input, output, session) {
       geom_density(data=brushed, fill = "red") +
       theme(legend.position = "none")
     
-  })
+  }, cacheKeyExpr = {input$yvar})
   
   # map updates --------------------------------------------------------------------------------------
   #create colorData to be able to create palette
@@ -399,7 +410,8 @@ server <- function(input, output, session) {
   })
   
   
-} # ---------------------------------------------------------------------- end server function 
+  
+} 
 
 
 ######################################################################################################
