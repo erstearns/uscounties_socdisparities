@@ -48,7 +48,7 @@ state_names <- as.character(unique(adata$state_name))
 ui <- bootstrapPage(
   dashboardPage(
     skin = "green",
-    dashboardHeader(title = "MoD:GeoDisparities"),
+    dashboardHeader(title = "US County /n GeoDisparities"),
     dashboardSidebar(
       sidebarMenu(
         menuItem("About", tabName = "about", icon = icon("leanpub")),
