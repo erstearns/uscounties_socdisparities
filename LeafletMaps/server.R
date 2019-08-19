@@ -304,9 +304,9 @@ shinyServer(function(input, output, session) {
   #left map
   leftmap.labels <- reactive({
     sprintf(
-      "%s<br/>%s<br/>%s",
-      paste0(input$xvar,": ", round(xData(),digits = 2)),
-      paste0(input$yvar, ": ", round(yData(),digits = 2))
+      "%s<br/>%s<br/>",
+      paste0(input$leftvar,": ", round(xData(),digits = 2)),
+      paste0(input$rightvar, ": ", round(yData(),digits = 2))
     ) %>% lapply(htmltools::HTML)
     
   })
@@ -314,24 +314,25 @@ shinyServer(function(input, output, session) {
   #right map
   rightmap.labels <- reactive({
     sprintf(
-      "%s<br/>%s<br/>%s",
-      paste0(input$yvar, ": ", round(yData(),digits = 2)),
-      paste0(input$xvar,": ", round(xData(),digits = 2))
+      "%s<br/>%s<br/>",
+      paste0(input$rightvar, ": ", round(yData(),digits = 2)),
+      paste0(input$leftvar,": ", round(xData(),digits = 2))
     ) %>% lapply(htmltools::HTML)
     
   })
   
   # Update map to be chloropleth of colorvar w/legend ---------------------------------------------
   
-  # update map with polygons
+  # ---- update maps with polygons ----
   # - child of: pal()
+  #left map
   observe({
-    print('observe: updating map to be chloropleth of colorvar')
+    print('observe: updating left map to be chloropleth of leftVar')
     print(paste0("df class: ",class(df)))
-    leafletProxy('map') %>%
+    leafletProxy('leftmap') %>%
       addPolygons(
         data = df,
-        fillColor = pal(),
+        fillColor = leftpal(),
         weight = 1,
         opacity = 1,
         color = "black",
@@ -343,7 +344,7 @@ shinyServer(function(input, output, session) {
           dashArray = "",
           fillOpacity = 0.7,
           bringToFront = TRUE),
-        label = map.labels(), popup = map.labels(), #~htmlEscape(input$color)
+        label = leftmap.labels(), popup = leftmap.labels(), #~htmlEscape(input$color)
         labelOptions = labelOptions(
           style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "15px",
@@ -351,13 +352,50 @@ shinyServer(function(input, output, session) {
       )
   })
   
-  #add legend
+  #right map
+  observe({
+    print('observe: updating left map to be chloropleth of leftVar')
+    print(paste0("df class: ",class(df)))
+    leafletProxy('rightmap') %>%
+      addPolygons(
+        data = df,
+        fillColor = rightpal(),
+        weight = 1,
+        opacity = 1,
+        color = "black",
+        dashArray = "3",
+        fillOpacity = 0.7,
+        highlight = highlightOptions(
+          weight = 5,
+          color = "#666",
+          dashArray = "",
+          fillOpacity = 0.7,
+          bringToFront = TRUE),
+        label = rightmap.labels(), popup = rightmap.labels(), #~htmlEscape(input$color)
+        labelOptions = labelOptions(
+          style = list("font-weight" = "normal", padding = "3px 8px"),
+          textsize = "15px",
+          direction = "auto")
+      )
+  })
+  
+  # ---- add legend ----
+  #left map
   observe({
     print("observe: legend")
-    leafletProxy("map") %>%
+    leafletProxy("leftmap") %>%
       clearControls() %>%
-      addLegend(opacity = 0.99,position = "bottomright",title = colorVar(),
-                pal = colorpal(), values = rev(colorData()))
+      addLegend(opacity = 0.99,position = "bottomright",title = xVar(),
+                pal = leftcolorpal(), values = rev(leftcolorData()))
+  })
+  
+  #right map
+  observe({
+    print("observe: legend")
+    leafletProxy("rightmap") %>%
+      clearControls() %>%
+      addLegend(opacity = 0.99,position = "bottomright",title = yVar(),
+                pal = rightcolorpal(), values = rev(rightcolorData()))
   })
 #################################################################################################  
 # -------------------------- "TECHNICAL DETAILS" PAGE ------------------------------------------- 
