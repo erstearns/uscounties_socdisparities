@@ -1,51 +1,8 @@
 ##############################################
 # Code author: erin r stearns
-# Code objective: testing plotly v leaflet efficiency
+# Code objective: testing plotly v leaflet efficiency-- user interface
 # Date: 1.8.2019
 #############################################
-
-# Developed with R version 3.4.4 (64-bit)
-library(shiny)
-library(leaflet)
-library(leaflet.extras)
-library(RColorBrewer)
-library(rgdal)
-library(sf)
-library(ggplot2)
-library(ggvis)
-library(dplyr)
-library(fontawesome)
-require(raster)
-require(gstat)
-library(stringr)
-library(png)
-library(shinyjs)
-library(DT) #provides an R interface to the JavaScript library DataTables. R data objects (matrices or data frames) can be displayed as tables on HTML pages, and DataTables provides filtering, pagination, sorting, and many other features in the tables
-library(rintrojs)
-
-# Calling carousel script -- not sure how this is being used
-source("carouselPanel.R")
-
-# Panel div for visualization
-# override the currently broken definition in shinyLP version 1.1.0
-panel_div <- function(class_type, content) {
-  div(class = sprintf("panel panel-%s", class_type),
-      div(class = "panel-body", content)
-  )
-}
-
-# -------------------------------------- load data ------------------------------------------------- 
-#load spatial data
-geodata <- readRDS('data/sf_acs5_2007_2017_w2010counties_v.Rds')
-#transform spatial data to wgs84
-geodata <- st_transform(geodata, crs = 4326)
-
-#load aspatial data
-adata <- readRDS('data/acs5_2007_2017_fin.Rds')
-
-# -------------------------------------- app inputs defined ----------------------------------------
-#state choices
-state_names <- as.character(unique(adata$state_name))
 
 ######################################################################################################
 # -------------------------------------- ui -------------------------------------------------------- #
@@ -140,7 +97,7 @@ shinyUI(navbarPage(title = img(src="mod.jpg", height = "40px"), id = "navBar",
                               column(3),
                               column(6,
                                      shiny::HTML("<br><br><center> <h1>Where it came from</h1> </center><br>"),
-                                     shiny::HTML("<h5>Our team has access currently has access to restricted-access NCHS 
+                                     shiny::HTML("<h5>Our team currently has access to restricted-access NCHS 
                                                  natality records from 1989-2016 that we used to estimate (and map) the 
                                                  prevalence of very preterm birth (<32 weeks); late preterm birth (34-36 weeks); 
                                                  and preterm birth (<37 weeks) for each U.S. county overall, and for 
@@ -358,24 +315,26 @@ shinyUI(navbarPage(title = img(src="mod.jpg", height = "40px"), id = "navBar",
                                                              selected = "All"),
                                               
                                               #select year
-                                              sliderInput('year', label = "Year", value = 2007, 
-                                                          min = 2007, max = 2017, 
+                                              sliderInput('year', label = "Year", value = min(geodata$year), 
+                                                          min = min(geodata$year), max = max(geodata$year), 
                                                           step=1, sep = ""
                                                           #,animate = animationOptions(interval = 750) #too slow with animation
                                                           ),
                                               
                                               #select left-side data to be mapped & plotted
-                                              uiOutput('xvar'),
+                                              uiOutput('leftvar'),
                                               
                                               #select number of quantiles for left-side data
-                                              sliderInput('xquantiles', label = "Left-side Quantiles", value = 5, min = 2, max = 10, step = 1, sep = ""
+                                              sliderInput('leftquantiles', label = "Left-side Quantiles", 
+                                                          value = 5, min = 2, max = 10, step = 1, sep = ""
                                               ),
                                               
                                               #select right-side data to be mapped & plotted
-                                              uiOutput('yvar'),
+                                              uiOutput('rightvar'),
                                               
                                               #select number of quantiles for right-side data
-                                              sliderInput('yquantiles', label = "Right-side Quantiles", value = 5, min = 2, max = 10, step = 1, sep = ""
+                                              sliderInput('rightquantiles', label = "Right-side Quantiles", 
+                                                          value = 5, min = 2, max = 10, step = 1, sep = ""
                                               ),
                                               
                                               #grab ui output
@@ -387,9 +346,49 @@ shinyUI(navbarPage(title = img(src="mod.jpg", height = "40px"), id = "navBar",
                               #Main panel -- Maps & plots controlled by settings in sidebar
                               mainPanel( width = 8,
                                          fluidRow(
+                                           column(6,
+                                                  leafletOutput("leftmap")
+                                           ),
+                                           column(6,
+                                                  leafletOutput("rightmap")
+                                           )
+                                           
                                          ),
+                                         
                                          fluidRow(
-                                           div()
+                                           
+                                           style = "height:50px;"),
+                                         
+                                         # PAGE BREAK
+                                         tags$hr(),
+                                         
+                                         #Univariate scatter plots
+                                         fluidRow(
+                                           column(6,
+                                                  plotOutput("leftscatter")
+                                           ),
+                                           column(6,
+                                                  plotOutput("rightscatter")
+                                           )
+                                         ),
+                                         
+                                         fluidRow(
+                                           
+                                           style = "height:50px;"),
+                                         
+                                         # PAGE BREAK
+                                         tags$hr(),
+                                         
+                                         #Bivariate scatter plot
+                                         fluidRow(
+                                           column(12,
+                                                  plotOutput("biscatter",
+                                                             brush = brushOpts(id="bibrush"))
+                                           )
+                                         ),
+                                         
+                                         #space
+                                         fluidRow(style = "height:25px;"
                                          )
                               )  # Closes the mainPanel
                             )  # Closes the sidebarLayout
